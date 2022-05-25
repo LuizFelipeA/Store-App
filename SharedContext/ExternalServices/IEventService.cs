@@ -1,6 +1,7 @@
+using SharedContext.Events;
 namespace SharedContext.ExternalServices;
 
 public interface IEventService
 {
-    public Task QueueAsync(IDomainEvent evt);
+    public void QueueAsync(IDomainEvent evt);
 }
