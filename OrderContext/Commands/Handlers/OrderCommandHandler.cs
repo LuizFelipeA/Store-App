@@ -1,4 +1,5 @@
 using OrderContext.Entities;
+using OrderContext.Events;
 using OrderContext.ExternalServices;
 using OrderContext.Repositories;
 using OrderContext.ValueObjects;
@@ -38,7 +39,7 @@ public class OrderCommandHandler :
             return; // Return fail notification
 
         var order = new Order(user);
-        order.OnOrderPlaced += OnOrderPlaced;
+        order.OnOrderPlaced += OnOrderPlaced; // Delegating event
 
         order.Place();
 
@@ -65,9 +66,9 @@ public class OrderCommandHandler :
         order.Pay(transaction);
     }
 
-    private async void OnOrderPlaced(object sender, EventArgs e)
-        => await _eventService.QueueAsync(new OrderCreatedEvent((Order) sender));
+    private void OnOrderPlaced(object sender, EventArgs e)
+        => _eventService.Queue(new OrderCreatedEvent((Order) sender));
 
-    private async void OnOrderPaid(object sender, EventArgs e)
-        => await _eventService.QueueAsync(new OrderPaidEvent((Order) sender));
+    private void OnOrderPaid(object sender, EventArgs e)
+        => _eventService.Queue(new OrderPaidEvent((Order) sender));
 }

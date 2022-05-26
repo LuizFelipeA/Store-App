@@ -6,7 +6,7 @@ namespace SharedContext.ExternalServices;
 
 public class KafkaEventService : IEventService
 {
-    public void QueueAsync(IDomainEvent evt)
+    public void Queue(IDomainEvent evt)
     {
         var config = LoadConfig();
         var value = JsonSerializer.Serialize(evt);
@@ -31,12 +31,16 @@ public class KafkaEventService : IEventService
         string topic, string key, string value, ClientConfig config)
     {
         using var producer = new ProducerBuilder<string, string>(config).Build();
-        producer.Produce(topic, new Message<string, string> { Key = key, Value = value },
+
+        producer.Produce(
+            topic,
+            new Message<string, string> { Key = key, Value = value },
             (deliveryReport) =>
             {
                 if(deliveryReport.Error.Code != ErrorCode.NoError)
                     throw new Exception(deliveryReport.Error.Reason);
             });
+            
         producer.Flush(TimeSpan.FromSeconds(10));
     }
 }
